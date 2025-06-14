@@ -19,7 +19,7 @@ public class CartController {
 
     @GetMapping("/getCartById/{idCart}")
     public ResponseEntity<?> getCartById(@PathVariable("idCart" Long idCart)) {
-        return cartSer;
+        return cartService.getCartById(idCart);
     }
     
 
