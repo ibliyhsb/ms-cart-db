@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import cl.duoc.ms_cart_db.model.dto.CartDTO;
+import cl.duoc.ms_cart_db.model.dto.ProductDTO;
 import cl.duoc.ms_cart_db.model.entities.Cart;
 import cl.duoc.ms_cart_db.model.repository.CartRepository;
 
@@ -45,13 +46,13 @@ public class CartService {
 
         Optional<Cart> OpCart = cartRepository.findById(idCart);
         if(!OpCart.isPresent()){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("There is no cart with this ID");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("There is no cart with this ID.");
         }
     
         else {
 
         List<Cart> data = cartRepository.findByCartId(idCart);
-        ArrayList<Long> products = new ArrayList<>();
+        ArrayList<String> products = new ArrayList<>();
         CartDTO cartDTO = new CartDTO();
         int total = 0;
         Long idCustomer = null;
@@ -82,4 +83,34 @@ public class CartService {
 
     }
 
+    public ResponseEntity<?> insertProduct (ProductDTO productDTO, Long idCart){
+
+        Optional<Cart> cartOp = cartRepository.findById(idCart);
+
+        if(!cartOp.isPresent()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("There is no cart with this ID.");
+        }
+
+        else {
+            Cart cartUpdated = cartOp.get();
+            cartUpdated.setProduct(productDTO.getProductName());
+            cartRepository.save(cartUpdated);
+
+            return ResponseEntity.ok("Product added to cart.");
+
+        }
+    }
+
+    public ResponseEntity<?> deleteProduct(String productName, Long idCart){
+
+        Optional<Cart> cartOp = cartRepository.findById(idCart);
+
+        if(!cartOp.isPresent()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("There is no cart with this ID.");
+        }
+
+        else {
+            return cartRepository.deleteProductByName(idCart, productName);
+        }
+    }
 }

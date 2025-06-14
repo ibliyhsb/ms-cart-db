@@ -25,7 +25,7 @@ public class Cart {
     @Column(name = "id_customer")
     private Long idCustomer;
     @Column(name = "product")
-    private Long product;
+    private String product;
     @Column(name = "price")
     private int price;
 
