@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import cl.duoc.ms_cart_db.model.dto.CartDTO;
-import cl.duoc.ms_cart_db.model.dto.ProductDTO;
 import cl.duoc.ms_cart_db.model.entities.Cart;
 import cl.duoc.ms_cart_db.model.repository.CartRepository;
 
@@ -42,11 +41,13 @@ public class CartService {
     
 
 
-    public ResponseEntity<?> getCartById (Long idCart){
+    public CartDTO getCartById (Long idCart){
 
         Optional<Cart> OpCart = cartRepository.findById(idCart);
+
         if(!OpCart.isPresent()){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("There is no cart with this ID.");
+            CartDTO cartDTO = null;
+            return cartDTO;
         }
     
         else {
@@ -68,22 +69,12 @@ public class CartService {
         cartDTO.setProducts(products);
         cartDTO.setTotal(total);
 
-        return ResponseEntity.ok("ID Cart: "
-                                 + cartDTO.getIdCart()
-                                 + "\n"
-                                 + "ID Customer: "
-                                 + cartDTO.getIdCustomer()
-                                 + "\n"
-                                 + "Products: "
-                                 + "\n"
-                                 + cartDTO.getProducts()
-                                 + "\n"
-                                 + "Total: "
-                                 + cartDTO.getTotal()); }
+        return cartDTO;
+    }
 
     }
 
-    public ResponseEntity<?> insertProduct (ProductDTO productDTO, Long idCart){
+    public ResponseEntity<?> insertProduct (String productName, Long idCart){
 
         Optional<Cart> cartOp = cartRepository.findById(idCart);
 
@@ -93,7 +84,7 @@ public class CartService {
 
         else {
             Cart cartUpdated = cartOp.get();
-            cartUpdated.setProduct(productDTO.getProductName());
+            cartUpdated.setProduct(productName);
             cartRepository.save(cartUpdated);
 
             return ResponseEntity.ok("Product added to cart.");
@@ -110,7 +101,7 @@ public class CartService {
         }
 
         else {
-            return cartRepository.deleteProductByName(idCart, productName);
+            return cartRepository.deleteProductByName(productName, idCart);
         }
     }
 }

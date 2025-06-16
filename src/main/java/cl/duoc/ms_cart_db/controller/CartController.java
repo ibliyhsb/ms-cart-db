@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import cl.duoc.ms_cart_db.model.dto.CartDTO;
-import cl.duoc.ms_cart_db.model.dto.ProductDTO;
 import cl.duoc.ms_cart_db.service.CartService;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,29 +17,29 @@ import org.springframework.web.bind.annotation.PutMapping;
 
 
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping("/api/Cart")
 public class CartController {
 
     @Autowired
     CartService cartService;
 
     @GetMapping("/getCartById/{idCart}")
-    public ResponseEntity<?> getCartById(@PathVariable("idCart") Long idCart) {
+    public CartDTO getCartById(@PathVariable("idCart") Long idCart) {
         return cartService.getCartById(idCart);
     }
     
     @PostMapping("/insertCart")
-    public ResponseEntity<String> insertCart (CartDTO cartDTO){
+    public ResponseEntity<?> insertCart (CartDTO cartDTO){
         return cartService.insertCart(cartDTO);
     }
     
     @PutMapping("/insertProduct/{idCart}")
-    public ResponseEntity<?> insertProduct (ProductDTO productDTO, @PathVariable("idCart") Long idCart){
-        return cartService.insertProduct(productDTO, idCart);
+    public ResponseEntity<?> insertProduct (String productName, @PathVariable("idCart") Long idCart){
+        return cartService.insertProduct(productName, idCart);
     }
 
-    @DeleteMapping("/deleteProduct/{idCart}")
-    public ResponseEntity<?> deleteProduct(String productName, Long idCart){
+    @DeleteMapping("/deleteProduct/{productName}/{idCart}")
+    public ResponseEntity<?> deleteProduct(@PathVariable("productName")String productName, @PathVariable("idCart") Long idCart){
         return cartService.deleteProduct(productName, idCart);
     }
 
