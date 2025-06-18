@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 
 
@@ -29,19 +30,19 @@ public class CartController {
     }
     
     @PostMapping("/insertCart")
-    public ResponseEntity<?> insertCart (CartDTO cartDTO){
+    public ResponseEntity<?> insertCart (@RequestBody CartDTO cartDTO){
         return cartService.insertCart(cartDTO);
     }
     
-    @PutMapping("/insertProduct/{idCart}")
-    public ResponseEntity<?> insertProduct (String productName, @PathVariable("idCart") Long idCart){
-        return cartService.insertProduct(productName, idCart);
+    @PostMapping("/insertProduct/{price}/{productName}/{idCart}")
+    public ResponseEntity<?> insertProduct (@PathVariable("price") int price, @PathVariable("productName") String productName, @PathVariable("idCart") Long idCart){
+        return cartService.insertProduct(price, productName, idCart);
     }
 
-    @DeleteMapping("/deleteProduct/{productName}/{idCart}")
-    public ResponseEntity<?> deleteProduct(@PathVariable("productName")String productName, @PathVariable("idCart") Long idCart){
-        return cartService.deleteProduct(productName, idCart);
-    }
+  //  @DeleteMapping("/deleteProduct/{productName}/{idCart}")
+  //  public ResponseEntity<?> deleteProduct(@PathVariable("productName")String productName, @PathVariable("idCart") Long idCart){
+  //      return cartService.deleteProduct(productName, idCart);
+  //  }
 
 
 }

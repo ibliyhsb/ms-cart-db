@@ -33,6 +33,11 @@ public class CartService {
 
     public ResponseEntity<String> insertCart (CartDTO cartDTO){
 
+        Optional<Cart> cartOp = cartRepository.findById(cartDTO.getIdCart());
+
+        if(cartOp.isPresent()){
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("This customer's cart already exist");
+        }
             Cart newCart = translateDtoToEntity(cartDTO);
             cartRepository.save(newCart);
 
@@ -43,16 +48,14 @@ public class CartService {
 
     public CartDTO getCartById (Long idCart){
 
-        Optional<Cart> OpCart = cartRepository.findById(idCart);
+    Optional<Cart> cartOp = cartRepository.findByIdCart(idCart);
+    List<Cart> data = cartRepository.findAllByCartId(idCart);
 
-        if(!OpCart.isPresent()){
-            CartDTO cartDTO = null;
-            return cartDTO;
+        if(!cartOp.isPresent()){
+            return null; 
         }
     
         else {
-
-        List<Cart> data = cartRepository.findByCartId(idCart);
         ArrayList<String> products = new ArrayList<>();
         CartDTO cartDTO = new CartDTO();
         int total = 0;
@@ -74,7 +77,7 @@ public class CartService {
 
     }
 
-    public ResponseEntity<?> insertProduct (String productName, Long idCart){
+    public ResponseEntity<?> insertProduct (int price, String productName, Long idCart){
 
         Optional<Cart> cartOp = cartRepository.findById(idCart);
 
@@ -83,25 +86,31 @@ public class CartService {
         }
 
         else {
-            Cart cartUpdated = cartOp.get();
-            cartUpdated.setProduct(productName);
-            cartRepository.save(cartUpdated);
+
+            Cart cart = new Cart();
+
+            cart.setIdCustomer(idCart);
+            cart.setIdCart(idCart);
+            cart.setPrice(price);
+            cart.setProduct(productName);
+            cartRepository.save(cart);
 
             return ResponseEntity.ok("Product added to cart.");
 
         }
     }
 
-    public ResponseEntity<?> deleteProduct(String productName, Long idCart){
+    //public ResponseEntity<?> deleteProduct(String productName, Long idCart){
 
-        Optional<Cart> cartOp = cartRepository.findById(idCart);
+      //  Optional<Cart> cartOp = cartRepository.findById(idCart);
 
-        if(!cartOp.isPresent()){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("There is no cart with this ID.");
-        }
+        //if(!cartOp.isPresent()){
+          //  return ResponseEntity.status(HttpStatus.NOT_FOUND).body("There is no cart with this ID.");
+        //}
 
-        else {
-            return cartRepository.deleteProductByName(productName, idCart);
-        }
-    }
+        //else {
+          //  cartRepository.deleteProductByName(productName, idCart);
+            //return ResponseEntity.ok("Product deleted successfully");
+       // }
+    //}
 }
