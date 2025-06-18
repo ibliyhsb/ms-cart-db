@@ -59,16 +59,14 @@ public class CartService {
         ArrayList<String> products = new ArrayList<>();
         CartDTO cartDTO = new CartDTO();
         int total = 0;
-        Long idCustomer = null;
 
-        for (Cart c : data){
+        for (Cart c : data.subList(1, data.size())){
             products.add(c.getProduct());
             total += c.getPrice();
-            idCustomer = c.getIdCustomer();
         }
 
         cartDTO.setIdCart(idCart);
-        cartDTO.setIdCustomer(idCustomer);
+        cartDTO.setIdCustomer(idCart); //se le asigna el idCart porque en el metodo insertCart se gestiona para que el idCart sea el msimo id que el del customer
         cartDTO.setProducts(products);
         cartDTO.setTotal(total);
 
