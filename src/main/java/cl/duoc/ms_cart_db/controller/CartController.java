@@ -39,10 +39,10 @@ public class CartController {
         return cartService.insertProduct(price, productName, idCart);
     }
 
-  //  @DeleteMapping("/deleteProduct/{productName}/{idCart}")
-  //  public ResponseEntity<?> deleteProduct(@PathVariable("productName")String productName, @PathVariable("idCart") Long idCart){
-  //      return cartService.deleteProduct(productName, idCart);
-  //  }
+    @DeleteMapping("/deleteProduct/{productName}/{idCart}")
+      public ResponseEntity<String> deleteProduct(@PathVariable("productName")String productName, @PathVariable("idCart") Long idCart){
+          return cartService.deleteProduct(productName, idCart);
+      }
 
 
 }

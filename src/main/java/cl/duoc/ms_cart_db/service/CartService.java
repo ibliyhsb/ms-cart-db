@@ -100,17 +100,23 @@ public class CartService {
         }
     }
 
-    //public ResponseEntity<?> deleteProduct(String productName, Long idCart){
+    public ResponseEntity<String> deleteProduct(String productName, Long idCart){
 
-      //  Optional<Cart> cartOp = cartRepository.findById(idCart);
+        Optional<Cart> cartOp = cartRepository.findById(idCart);
 
-        //if(!cartOp.isPresent()){
-          //  return ResponseEntity.status(HttpStatus.NOT_FOUND).body("There is no cart with this ID.");
-        //}
+        if(!cartOp.isPresent()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("There is no cart with this ID.");
+        }
 
-        //else {
-          //  cartRepository.deleteProductByName(productName, idCart);
-            //return ResponseEntity.ok("Product deleted successfully");
-       // }
-    //}
+        else {
+            if(getCartById(idCart).getProducts().contains(productName)){
+            cartRepository.deleteProductByName(productName, idCart);
+            return ResponseEntity.ok("Product deleted successfully");
+            }
+            else{
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("The product doesn't exist in the cart.");
+            }
+
+        }
+    }
 }
