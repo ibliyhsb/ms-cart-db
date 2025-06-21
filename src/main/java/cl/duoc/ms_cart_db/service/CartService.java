@@ -33,7 +33,7 @@ public class CartService {
 
     public ResponseEntity<String> insertCart (CartDTO cartDTO){
 
-        Optional<Cart> cartOp = cartRepository.findById(cartDTO.getIdCart());
+        Optional<Cart> cartOp = cartRepository.findByIdCart(cartDTO.getIdCart());
 
         if(cartOp.isPresent()){
             return ResponseEntity.status(HttpStatus.CONFLICT).body("This customer's cart already exist");
@@ -77,7 +77,7 @@ public class CartService {
 
     public ResponseEntity<?> insertProduct (int price, String productName, Long idCart){
 
-        Optional<Cart> cartOp = cartRepository.findById(idCart);
+        Optional<Cart> cartOp = cartRepository.findByIdCart(idCart);
 
         if(!cartOp.isPresent()){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("There is no cart with this ID.");
@@ -100,7 +100,7 @@ public class CartService {
 
     public ResponseEntity<String> deleteProduct(String productName, Long idCart){
 
-        Optional<Cart> cartOp = cartRepository.findById(idCart);
+        Optional<Cart> cartOp = cartRepository.findByIdCart(idCart);
 
         if(!cartOp.isPresent()){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("There is no cart with this ID.");
