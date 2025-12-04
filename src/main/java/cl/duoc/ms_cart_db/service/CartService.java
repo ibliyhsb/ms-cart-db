@@ -3,13 +3,14 @@ package cl.duoc.ms_cart_db.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import cl.duoc.ms_cart_db.model.dto.CartDTO;
+import cl.duoc.ms_cart_db.model.dto.CartItemDTO;
 import cl.duoc.ms_cart_db.model.entities.Cart;
 import cl.duoc.ms_cart_db.model.repository.CartRepository;
 
@@ -20,101 +21,114 @@ public class CartService {
     @Autowired
     CartRepository cartRepository;
 
-    public Cart translateDtoToEntity(CartDTO cartDTO){
-
-        Cart cart = new Cart();
-        cart.setIdCart(cartDTO.getIdCart());
-        cart.setIdCustomer(cartDTO.getIdCustomer());
-        cart.setProduct(null);
-        cart.setPrice(0);
-
-        return cart;
-    }
-
-    public ResponseEntity<String> insertCart (CartDTO cartDTO){
-
-        Optional<Cart> cartOp = cartRepository.findByIdCart(cartDTO.getIdCart());
-
-        if(cartOp.isPresent()){
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("This customer's cart already exist");
-        }
-            Cart newCart = translateDtoToEntity(cartDTO);
-            cartRepository.save(newCart);
-
-            return ResponseEntity.ok("Cart created.");
-        }
-    
-
-
-    public CartDTO getCartById (Long idCart){
-
-    Optional<Cart> cartOp = cartRepository.findByIdCart(idCart);
-    List<Cart> data = cartRepository.findAllByCartId(idCart);
-
-        if(!cartOp.isPresent()){
-            return null; 
-        }
-    
-        else {
-        ArrayList<String> products = new ArrayList<>();
+    // A) Crear carrito nuevo
+    @Transactional
+    public CartDTO createCart(String idCustomer) {
+        // Generar nuevo idCart (siguiente ID disponible)
+        Long maxIdCart = cartRepository.findMaxIdCart();
+        Long newIdCart = (maxIdCart == null) ? 1L : maxIdCart + 1;
+        
         CartDTO cartDTO = new CartDTO();
-        int total = 0;
-
-        for (Cart c : data.subList(1, data.size())){
-            products.add(c.getProduct());
-            total += c.getPrice();
-        }
-
-        cartDTO.setIdCart(idCart);
-        cartDTO.setIdCustomer(idCart); //se le asigna el idCart porque en el metodo insertCart se gestiona para que el idCart sea el msimo id que el del customer
-        cartDTO.setProducts(products);
-        cartDTO.setTotal(total);
-
+        cartDTO.setIdCart(newIdCart);
+        cartDTO.setIdCustomer(idCustomer);
+        cartDTO.setItems(new ArrayList<>());
+        cartDTO.setTotal(0);
+        
         return cartDTO;
     }
-
-    }
-
-    public ResponseEntity<?> insertProduct (int price, String productName, Long idCart){
-
-        Optional<Cart> cartOp = cartRepository.findByIdCart(idCart);
-
-        if(!cartOp.isPresent()){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("There is no cart with this ID.");
-        }
-
-        else {
-
-            Cart cart = new Cart();
-
-            cart.setIdCustomer(idCart);
-            cart.setIdCart(idCart);
-            cart.setPrice(price);
-            cart.setProduct(productName);
+    
+    // B) Agregar producto al carrito
+    @Transactional
+    public CartDTO addProduct(Long idCart, CartItemDTO item) {
+        // Buscar si ya existe el mismo item
+        Optional<Cart> existingItem = cartRepository
+            .findByIdCartAndProductIdAndSizeAndPersonalizationMessage(
+                idCart,
+                item.getProductId(),
+                item.getSize(),
+                item.getPersonalizationMessage()
+            );
+        
+        if (existingItem.isPresent()) {
+            // Si existe, incrementar cantidad
+            Cart cart = existingItem.get();
+            cart.setQuantity(cart.getQuantity() + item.getQuantity());
             cartRepository.save(cart);
-
-            return ResponseEntity.ok("Product added to cart.");
-
+        } else {
+            // Si no existe, crear nuevo registro
+            Cart newCart = new Cart();
+            newCart.setIdCart(idCart);
+            newCart.setIdCustomer(item.getIdCustomer());
+            newCart.setProductId(item.getProductId());
+            newCart.setProductName(item.getProductName());
+            newCart.setPrice(item.getPrice());
+            newCart.setQuantity(item.getQuantity());
+            newCart.setSize(item.getSize());
+            newCart.setPersonalizationMessage(item.getPersonalizationMessage());
+            cartRepository.save(newCart);
         }
+        
+        // Retornar carrito completo actualizado
+        return getCartById(idCart);
     }
-
-    public ResponseEntity<String> deleteProduct(String productName, Long idCart){
-
-        Optional<Cart> cartOp = cartRepository.findByIdCart(idCart);
-
-        if(!cartOp.isPresent()){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("There is no cart with this ID.");
-        }
-
-        else {
-            if(getCartById(idCart).getProducts().contains(productName)){
-            cartRepository.deleteProductByName(productName, idCart);
-            return ResponseEntity.ok("Product deleted successfully");
+    
+    // C) Actualizar cantidad de un producto
+    @Transactional
+    public CartDTO updateQuantity(Long idCart, Long productId, int quantity) {
+        List<Cart> items = cartRepository.findByIdCart(idCart);
+        
+        for (Cart item : items) {
+            if (item.getProductId().equals(productId)) {
+                item.setQuantity(quantity);
+                cartRepository.save(item);
+                break;
             }
-            else{
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("The product doesn't exist in the cart.");
-            }
-
         }
+        
+        return getCartById(idCart);
+    }
+    
+    // D) Eliminar producto del carrito
+    @Transactional
+    public CartDTO deleteProduct(Long idCart, Long productId) {
+        cartRepository.deleteByIdCartAndProductId(idCart, productId);
+        return getCartById(idCart);
+    }
+    
+    // E) Obtener carrito por ID
+    public CartDTO getCartById(Long idCart) {
+        List<Cart> cartItems = cartRepository.findByIdCart(idCart);
+        
+        CartDTO cartDTO = new CartDTO();
+        cartDTO.setIdCart(idCart);
+        
+        if (!cartItems.isEmpty()) {
+            cartDTO.setIdCustomer(cartItems.get(0).getIdCustomer());
+            
+            // Convertir entities a DTOs
+            List<CartItemDTO> items = cartItems.stream().map(cart -> {
+                CartItemDTO item = new CartItemDTO();
+                item.setProductId(cart.getProductId());
+                item.setProductName(cart.getProductName());
+                item.setPrice(cart.getPrice());
+                item.setQuantity(cart.getQuantity());
+                item.setSize(cart.getSize());
+                item.setPersonalizationMessage(cart.getPersonalizationMessage());
+                return item;
+            }).collect(Collectors.toList());
+            
+            cartDTO.setItems(items);
+            
+            // Calcular total
+            int total = items.stream()
+                .mapToInt(item -> item.getPrice() * item.getQuantity())
+                .sum();
+            cartDTO.setTotal(total);
+        } else {
+            cartDTO.setItems(new ArrayList<>());
+            cartDTO.setTotal(0);
+        }
+        
+        return cartDTO;
     }
 }

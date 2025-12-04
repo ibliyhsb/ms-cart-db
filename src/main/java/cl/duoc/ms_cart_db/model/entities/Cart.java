@@ -22,13 +22,29 @@ public class Cart {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
+    
     @Column(name = "id_cart")
     private Long idCart;
+    
     @Column(name = "id_customer")
-    private Long idCustomer;
-    @Column(name = "product")
-    private String product;
+    private String idCustomer;
+    
+    @Column(name = "product_id")
+    private Long productId;
+    
+    @Column(name = "product_name")
+    private String productName;
+    
     @Column(name = "price")
     private int price;
+    
+    @Column(name = "quantity")
+    private int quantity;
+    
+    @Column(name = "size")
+    private String size;
+    
+    @Column(name = "personalization_message", columnDefinition = "TEXT")
+    private String personalizationMessage;
 
 }

@@ -19,15 +19,15 @@ import lombok.ToString;
 public class CartDTO {
     
     @JsonProperty(value = "id_cart")
-     private Long idCart;
+    private Long idCart;
 
     @JsonProperty(value = "id_customer")
-     private Long idCustomer;
+    private String idCustomer;
 
-    @JsonProperty(value = "Products")
-     private List<String> products;
+    @JsonProperty(value = "items")
+    private List<CartItemDTO> items;
 
     @JsonProperty(value = "total")
-     private int total;
+    private int total;
 
 }
