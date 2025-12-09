@@ -60,9 +60,13 @@ public class CartService {
         CartDTO cartDTO = new CartDTO();
         int total = 0;
 
-        for (Cart c : data.subList(1, data.size())){
-            products.add(c.getProduct());
-            total += c.getPrice();
+        // Procesar todos los registros, filtrando el inicial vacío
+        for (Cart c : data){
+            // Solo agregar si el producto no es null (saltar registro inicial)
+            if(c.getProduct() != null && !c.getProduct().isEmpty()){
+                products.add(c.getProduct());
+                total += c.getPrice();
+            }
         }
 
         cartDTO.setIdCart(idCart);
