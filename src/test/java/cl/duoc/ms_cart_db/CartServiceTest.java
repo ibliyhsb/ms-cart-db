@@ -16,7 +16,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import cl.duoc.ms_cart_db.model.dto.CartDTO;
 import cl.duoc.ms_cart_db.model.entities.Cart;
+import cl.duoc.ms_cart_db.model.entities.CartItem;
 import cl.duoc.ms_cart_db.model.repository.CartRepository;
+import cl.duoc.ms_cart_db.model.repository.CartItemRepository;
 import cl.duoc.ms_cart_db.service.CartService;
 
 @ExtendWith(MockitoExtension.class)
@@ -24,6 +26,9 @@ class CartServiceTest {
 
     @Mock
     private CartRepository cartRepository;
+    
+    @Mock
+    private CartItemRepository cartItemRepository;
 
     @InjectMocks
     private CartService cartService;
@@ -38,48 +43,52 @@ class CartServiceTest {
         // Arrange
         Long cartId = 1L;
         
-        // Create mock cart data simulating database records
-        List<Cart> cartData = new ArrayList<>();
+        // Create cart with items
+        Cart cart = new Cart();
+        cart.setIdCart(cartId);
+        cart.setIdCustomer(cartId);
         
-        // Initial record with null product (created when cart is created)
-        Cart initialCart = new Cart();
-        initialCart.setId(1L);
-        initialCart.setIdCart(cartId);
-        initialCart.setIdCustomer(cartId);
-        initialCart.setProduct(null);
-        initialCart.setPrice(0);
-        cartData.add(initialCart);
+        List<CartItem> items = new ArrayList<>();
         
-        // First product added
-        Cart cart1 = new Cart();
-        cart1.setId(2L);
-        cart1.setIdCart(cartId);
-        cart1.setIdCustomer(cartId);
-        cart1.setProduct("Product1");
-        cart1.setPrice(100);
-        cartData.add(cart1);
+        // First product
+        CartItem item1 = new CartItem();
+        item1.setId("item1");
+        item1.setCart(cart);
+        item1.setProductCode("P001");
+        item1.setProductName("Product1");
+        item1.setPrice(100.0);
+        item1.setQuantity(1);
+        item1.setSubtotal(100.0);
+        items.add(item1);
         
-        // Second product added
-        Cart cart2 = new Cart();
-        cart2.setId(3L);
-        cart2.setIdCart(cartId);
-        cart2.setIdCustomer(cartId);
-        cart2.setProduct("Product2");
-        cart2.setPrice(200);
-        cartData.add(cart2);
+        // Second product
+        CartItem item2 = new CartItem();
+        item2.setId("item2");
+        item2.setCart(cart);
+        item2.setProductCode("P002");
+        item2.setProductName("Product2");
+        item2.setPrice(200.0);
+        item2.setQuantity(1);
+        item2.setSubtotal(200.0);
+        items.add(item2);
         
-        // Third product added
-        Cart cart3 = new Cart();
-        cart3.setId(4L);
-        cart3.setIdCart(cartId);
-        cart3.setIdCustomer(cartId);
-        cart3.setProduct("Product3");
-        cart3.setPrice(300);
-        cartData.add(cart3);
+        // Third product
+        CartItem item3 = new CartItem();
+        item3.setId("item3");
+        item3.setCart(cart);
+        item3.setProductCode("P003");
+        item3.setProductName("Product3");
+        item3.setPrice(300.0);
+        item3.setQuantity(1);
+        item3.setSubtotal(300.0);
+        items.add(item3);
         
-        // Mock repository responses
-        when(cartRepository.findByIdCart(cartId)).thenReturn(Optional.of(initialCart));
-        when(cartRepository.findAllByCartId(cartId)).thenReturn(cartData);
+        cart.setItems(items);
+        cart.setSubtotal(600.0);
+        cart.setTotal(600.0);
+        
+        // Mock repository response
+        when(cartRepository.findByIdCart(cartId)).thenReturn(Optional.of(cart));
         
         // Act
         CartDTO result = cartService.getCartById(cartId);
@@ -89,61 +98,52 @@ class CartServiceTest {
         assertEquals(cartId, result.getIdCart(), "Cart ID should match");
         assertEquals(cartId, result.getIdCustomer(), "Customer ID should match");
         
-        // Verify all three products are included (not missing the first product)
-        assertEquals(3, result.getProducts().size(), "Should have 3 products");
-        assertTrue(result.getProducts().contains("Product1"), "Should contain Product1");
-        assertTrue(result.getProducts().contains("Product2"), "Should contain Product2");
-        assertTrue(result.getProducts().contains("Product3"), "Should contain Product3");
+        // Verify all three products are included
+        assertEquals(3, result.getItems().size(), "Should have 3 items");
+        assertTrue(result.getItems().stream().anyMatch(i -> i.getProductName().equals("Product1")), "Should contain Product1");
+        assertTrue(result.getItems().stream().anyMatch(i -> i.getProductName().equals("Product2")), "Should contain Product2");
+        assertTrue(result.getItems().stream().anyMatch(i -> i.getProductName().equals("Product3")), "Should contain Product3");
         
         // Verify total price is correct
-        assertEquals(600, result.getTotal(), "Total should be 600 (100+200+300)");
+        assertEquals(600.0, result.getTotal(), "Total should be 600.0 (100+200+300)");
     }
 
     @Test
-    void testGetCartById_ShouldFilterNullProducts() {
+    void testGetCartById_WithValidProduct() {
         // Arrange
         Long cartId = 2L;
         
-        List<Cart> cartData = new ArrayList<>();
+        Cart cart = new Cart();
+        cart.setIdCart(cartId);
+        cart.setIdCustomer(cartId);
         
-        // Initial record with null product
-        Cart initialCart = new Cart();
-        initialCart.setId(1L);
-        initialCart.setIdCart(cartId);
-        initialCart.setIdCustomer(cartId);
-        initialCart.setProduct(null);
-        initialCart.setPrice(0);
-        cartData.add(initialCart);
-        
-        // Product with empty string (should also be filtered)
-        Cart emptyCart = new Cart();
-        emptyCart.setId(2L);
-        emptyCart.setIdCart(cartId);
-        emptyCart.setIdCustomer(cartId);
-        emptyCart.setProduct("");
-        emptyCart.setPrice(0);
-        cartData.add(emptyCart);
+        List<CartItem> items = new ArrayList<>();
         
         // Valid product
-        Cart cart1 = new Cart();
-        cart1.setId(3L);
-        cart1.setIdCart(cartId);
-        cart1.setIdCustomer(cartId);
-        cart1.setProduct("ValidProduct");
-        cart1.setPrice(150);
-        cartData.add(cart1);
+        CartItem item1 = new CartItem();
+        item1.setId("item1");
+        item1.setCart(cart);
+        item1.setProductCode("P001");
+        item1.setProductName("ValidProduct");
+        item1.setPrice(150.0);
+        item1.setQuantity(1);
+        item1.setSubtotal(150.0);
+        items.add(item1);
         
-        when(cartRepository.findByIdCart(cartId)).thenReturn(Optional.of(initialCart));
-        when(cartRepository.findAllByCartId(cartId)).thenReturn(cartData);
+        cart.setItems(items);
+        cart.setSubtotal(150.0);
+        cart.setTotal(150.0);
+        
+        when(cartRepository.findByIdCart(cartId)).thenReturn(Optional.of(cart));
         
         // Act
         CartDTO result = cartService.getCartById(cartId);
         
         // Assert
         assertNotNull(result);
-        assertEquals(1, result.getProducts().size(), "Should have only 1 valid product");
-        assertTrue(result.getProducts().contains("ValidProduct"), "Should contain ValidProduct");
-        assertEquals(150, result.getTotal(), "Total should be 150");
+        assertEquals(1, result.getItems().size(), "Should have only 1 valid product");
+        assertTrue(result.getItems().stream().anyMatch(i -> i.getProductName().equals("ValidProduct")), "Should contain ValidProduct");
+        assertEquals(150.0, result.getTotal(), "Total should be 150.0");
     }
 
     @Test
@@ -160,30 +160,25 @@ class CartServiceTest {
     }
 
     @Test
-    void testGetCartById_EmptyCart_OnlyInitialRecord() {
+    void testGetCartById_EmptyCart() {
         // Arrange
         Long cartId = 3L;
         
-        List<Cart> cartData = new ArrayList<>();
+        Cart cart = new Cart();
+        cart.setIdCart(cartId);
+        cart.setIdCustomer(cartId);
+        cart.setItems(new ArrayList<>());
+        cart.setSubtotal(0.0);
+        cart.setTotal(0.0);
         
-        // Only initial record with null product
-        Cart initialCart = new Cart();
-        initialCart.setId(1L);
-        initialCart.setIdCart(cartId);
-        initialCart.setIdCustomer(cartId);
-        initialCart.setProduct(null);
-        initialCart.setPrice(0);
-        cartData.add(initialCart);
-        
-        when(cartRepository.findByIdCart(cartId)).thenReturn(Optional.of(initialCart));
-        when(cartRepository.findAllByCartId(cartId)).thenReturn(cartData);
+        when(cartRepository.findByIdCart(cartId)).thenReturn(Optional.of(cart));
         
         // Act
         CartDTO result = cartService.getCartById(cartId);
         
         // Assert
         assertNotNull(result);
-        assertEquals(0, result.getProducts().size(), "Should have no products");
-        assertEquals(0, result.getTotal(), "Total should be 0");
+        assertEquals(0, result.getItems().size(), "Should have no items");
+        assertEquals(0.0, result.getTotal(), "Total should be 0.0");
     }
 }

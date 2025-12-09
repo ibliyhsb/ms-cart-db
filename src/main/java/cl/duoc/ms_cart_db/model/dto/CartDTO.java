@@ -1,33 +1,33 @@
 package cl.duoc.ms_cart_db.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
+
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
-@ToString
-
 public class CartDTO {
-    
+
     @JsonProperty(value = "id_cart")
-     private Long idCart;
+    private Long idCart;
 
     @JsonProperty(value = "id_customer")
-     private Long idCustomer;
+    private Long idCustomer;
 
-    @JsonProperty(value = "Products")
-     private List<String> products;
+    @JsonProperty(value = "items")
+    private List<CartItemDTO> items;
+
+    @JsonProperty(value = "subtotal")
+    private Double subtotal;
+
+    @JsonProperty(value = "discount")
+    private Double discount;
 
     @JsonProperty(value = "total")
-     private int total;
+    private Double total;
 
+    @JsonProperty(value = "appliedCoupon")
+    private String appliedCoupon;
 }

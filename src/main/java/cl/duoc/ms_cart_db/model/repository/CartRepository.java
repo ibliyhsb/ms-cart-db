@@ -1,6 +1,5 @@
 package cl.duoc.ms_cart_db.model.repository;
 
-
 import java.util.List;
 import java.util.Optional;
 
@@ -13,9 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import cl.duoc.ms_cart_db.model.entities.Cart;
 
-
 @Repository
-public interface CartRepository extends JpaRepository<Cart, Long>{
+public interface CartRepository extends JpaRepository<Cart, Long> {
+    Optional<Cart> findByIdCustomer(Long idCustomer);
 
 @Query("SELECT c FROM Cart c WHERE c.idCart = :idCart")
 List<Cart> findAllByCartId(@Param("idCart") Long idCart);
