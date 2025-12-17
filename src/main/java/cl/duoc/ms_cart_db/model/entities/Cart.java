@@ -2,13 +2,15 @@ package cl.duoc.ms_cart_db.model.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "cart")
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class Cart {
@@ -22,6 +24,7 @@ public class Cart {
     private Long idCustomer;
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JsonManagedReference
     private List<CartItem> items = new ArrayList<>();
 
     @Column(name = "subtotal")

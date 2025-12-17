@@ -23,6 +23,11 @@ public class CartController {
     @GetMapping("/getByCustomerId/{customerId}")
     public ResponseEntity<CartDTO> getByCustomerId(@PathVariable Long customerId) {
         CartDTO cart = cartService.getByCustomerId(customerId);
+        if (cart == null) {
+            // Crear carrito automáticamente si no existe
+            Long cartId = cartService.createCart(customerId);
+            cart = cartService.getCartById(cartId);
+        }
         return ResponseEntity.ok(cart);
     }
 

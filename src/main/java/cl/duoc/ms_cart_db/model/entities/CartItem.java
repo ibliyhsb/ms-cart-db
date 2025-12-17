@@ -2,10 +2,12 @@ package cl.duoc.ms_cart_db.model.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Table(name = "cart_item")
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class CartItem {
@@ -16,7 +18,7 @@ public class CartItem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_cart", nullable = false)
-    @ToString.Exclude
+    @JsonBackReference
     private Cart cart;
 
     @Column(name = "product_code", nullable = false, length = 50)
