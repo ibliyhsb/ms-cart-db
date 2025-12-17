@@ -22,9 +22,11 @@ List<Cart> findAllByCartId(@Param("idCart") Long idCart);
 @Query("SELECT idCart FROM Cart WHERE idCart = :idCart")
 Optional<Cart> findByIdCart (@Param("idCart") Long idCart);
 
-@Transactional
-@Modifying
-@Query("DELETE FROM Cart c WHERE c.product = :productName AND c.idCart = :idCart")
-void deleteProductByName(@Param("productName") String productName, @Param("idCart") Long idCart);
+// Metodo legacy - obsoleto, usar CartItemRepository.deleteById() en su lugar
+// Mantenerlo comentado para evitar errores de query
+// @Transactional
+// @Modifying
+// @Query("DELETE FROM CartItem ci WHERE ci.productName = :productName AND ci.cart.idCart = :idCart")
+// void deleteProductByName(@Param("productName") String productName, @Param("idCart") Long idCart);
 
 }

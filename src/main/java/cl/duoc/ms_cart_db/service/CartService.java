@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,8 +37,10 @@ public class CartService {
     @Transactional
     public Long createCart(Long idCustomer) {
         // Verificar si ya existe un carrito para este customer
-        if (cartRepository.findByIdCustomer(idCustomer).isPresent()) {
-            throw new RuntimeException("El customer ya tiene un carrito");
+        Optional<Cart> existingCart = cartRepository.findByIdCustomer(idCustomer);
+        if (existingCart.isPresent()) {
+            // Retornar el carrito existente en lugar de lanzar error
+            return existingCart.get().getIdCart();
         }
 
         Cart cart = new Cart();
@@ -55,13 +58,23 @@ public class CartService {
         Cart cart = cartRepository.findById(idCart)
             .orElseThrow(() -> new RuntimeException("Carrito no encontrado"));
 
+        // Validar que price no sea null
+        if (itemDTO.getPrice() == null) {
+            throw new RuntimeException("El precio del producto es requerido (field: price o unitPrice)");
+        }
+
         CartItem item = new CartItem();
-        item.setId(itemDTO.getId());
+        // Generar ID si no viene (formato secuencial: 1, 2, 3, ...)
+        String itemId = itemDTO.getId() != null && !itemDTO.getId().isEmpty() 
+            ? itemDTO.getId() 
+            : String.valueOf(cart.getItems().size() + 1);
+        
+        item.setId(itemId);
         item.setCart(cart);
         item.setProductCode(itemDTO.getProductCode());
         item.setProductName(itemDTO.getProductName());
         item.setPrice(itemDTO.getPrice());
-        item.setQuantity(itemDTO.getQuantity());
+        item.setQuantity(itemDTO.getQuantity() != null ? itemDTO.getQuantity() : 1);
         item.setSize(itemDTO.getSize());
         item.setPersonalizationMessage(itemDTO.getPersonalizationMessage());
         item.setImageUrl(itemDTO.getImageUrl());

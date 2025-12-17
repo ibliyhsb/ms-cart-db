@@ -1,6 +1,7 @@
 package cl.duoc.ms_cart_db.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import lombok.*;
 
 @Data
@@ -17,6 +18,7 @@ public class CartItemDTO {
     @JsonProperty(value = "productName")
     private String productName;
 
+    // Acepta tanto "price" como "unitPrice" para compatibilidad
     @JsonProperty(value = "price")
     private Double price;
 
@@ -34,4 +36,10 @@ public class CartItemDTO {
 
     @JsonProperty(value = "subtotal")
     private Double subtotal;
+
+    // Setter alternativo para aceptar "unitPrice" además de "price"
+    @JsonSetter("unitPrice")
+    public void setUnitPrice(Double unitPrice) {
+        this.price = unitPrice;
+    }
 }
